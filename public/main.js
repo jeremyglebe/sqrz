@@ -63,4 +63,5 @@ Play.prototype = {
 }
 
 game.state.add('Play', Play);
-game.state.start('Play');
+game.state.add('DotLine', DotLine);
+game.state.start('DotLine');
