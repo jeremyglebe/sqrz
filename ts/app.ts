@@ -5,4 +5,4 @@ var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
 game.state.add('Sqrz', Sqrz);
 
 // Start the game
-game.state.start('Sqrz', true, false, game);
+game.state.start('Sqrz');
