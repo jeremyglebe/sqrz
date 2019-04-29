@@ -1,10 +1,15 @@
-class Sqrz extends Phaser.State{
+// This state represents the actual gameplay
+
+class Sqrz extends Phaser.State {
 
     // We are going to draw a dot with this.
     canvas: Phaser.Graphics;
 
+    preload() {
+    }
+
     // Function to create the initial game layout and world
-    create(){
+    create() {
         // Log that we've entered the state
         console.log("State: Sqrz")
         // Create a graphics object for the dot and line
@@ -17,10 +22,10 @@ class Sqrz extends Phaser.State{
         this.canvas.endFill();
     }
 
-    update(){
+    update() {
         // Clear the graphics
         this.canvas.clear();
-        
+
         // Set the fill color of the circle
         this.canvas.beginFill(0xFFFFFF);
         // Draw the circle

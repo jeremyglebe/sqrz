@@ -1,3 +1,4 @@
+// This state represents the actual gameplay
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -16,6 +17,8 @@ var Sqrz = /** @class */ (function (_super) {
     function Sqrz() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    Sqrz.prototype.preload = function () {
+    };
     // Function to create the initial game layout and world
     Sqrz.prototype.create = function () {
         // Log that we've entered the state

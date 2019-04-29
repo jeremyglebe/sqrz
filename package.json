@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/jeremyglebe/sqrz#readme",
   "dependencies": {
-    "phaser": "^2.6.2"
+    "phaser": "^2.6.2",
+    "socketio": "^1.0.0"
   }
 }
