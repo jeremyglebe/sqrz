@@ -18,7 +18,7 @@ app.get('/', function (req, res) {
 io.on('connection', function (user) {
     console.log("Anonymous user has connected...");
 
-    user.on("disconnect", function(){
+    user.on("disconnect", function () {
         console.log("Anonymous user has disconnected...");
     })
 
