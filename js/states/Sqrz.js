@@ -23,6 +23,8 @@ var Sqrz = /** @class */ (function (_super) {
     Sqrz.prototype.create = function () {
         // Log that we've entered the state
         console.log("State: Sqrz");
+        // Connection to the server
+        this.server = SocketIO();
         //Initialize the game pointer
         this.ptr = this.game.input.activePointer;
         // Initialize the line origin (no origin until a dot is clicked)
@@ -40,6 +42,8 @@ var Sqrz = /** @class */ (function (_super) {
             }
         }
         this.draw_grid();
+        // Call handler when receiving message from server
+        this.server.on('line_drawn', this.serverLineDrawn);
     };
     Sqrz.prototype.update = function () {
         this.draw_line();
@@ -89,7 +93,22 @@ var Sqrz = /** @class */ (function (_super) {
             this.line.moveTo(this.ptr.x, this.ptr.y);
             // Draw to the center (the dot)
             this.line.lineTo(this.line_origin.x, this.line_origin.y);
+            // Send a message to the server
+            this.server.emit('draw_line', {
+                x: this.ptr.x,
+                y: this.ptr.y
+            }, {
+                x: this.line_origin.x,
+                y: this.line_origin.y
+            });
         }
+    };
+    Sqrz.prototype.serverLineDrawn = function (coords1, coords2) {
+        var new_line = this.game.add.graphics(0, 0);
+        // Line style for the line
+        new_line.lineStyle(2, 0x00FF00);
+        new_line.moveTo(coords1.x, coords1.y);
+        new_line.lineTo(coords2.x, coords2.y);
     };
     return Sqrz;
 }(Phaser.State));

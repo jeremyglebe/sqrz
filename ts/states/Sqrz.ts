@@ -1,3 +1,5 @@
+
+
 // This state represents the actual gameplay
 
 class Sqrz extends Phaser.State {
@@ -10,6 +12,8 @@ class Sqrz extends Phaser.State {
     line: Phaser.Graphics;
     // Sprite that the user is drawing a line from
     line_origin: Phaser.Sprite;
+    // Server connection object
+    server: SocketIO.Server;
 
     preload() {
     }
@@ -18,6 +22,9 @@ class Sqrz extends Phaser.State {
     create() {
         // Log that we've entered the state
         console.log("State: Sqrz")
+
+        // Connection to the server
+        this.server = SocketIO();
 
         //Initialize the game pointer
         this.ptr = this.game.input.activePointer;
@@ -37,6 +44,9 @@ class Sqrz extends Phaser.State {
             }
         }
         this.draw_grid();
+
+        // Call handler when receiving message from server
+        this.server.on('line_drawn', this.serverLineDrawn);
     }
 
     update() {
@@ -90,7 +100,26 @@ class Sqrz extends Phaser.State {
             this.line.moveTo(this.ptr.x, this.ptr.y);
             // Draw to the center (the dot)
             this.line.lineTo(this.line_origin.x, this.line_origin.y);
+            // Send a message to the server
+            this.server.emit('draw_line',
+                {
+                    x: this.ptr.x,
+                    y: this.ptr.y
+                },
+                {
+                    x: this.line_origin.x,
+                    y: this.line_origin.y
+                }
+            );
         }
+    }
+
+    serverLineDrawn(coords1, coords2) {
+        let new_line = this.game.add.graphics(0, 0);
+        // Line style for the line
+        new_line.lineStyle(2, 0x00FF00);
+        new_line.moveTo(coords1.x, coords1.y);
+        new_line.lineTo(coords2.x, coords2.y);
     }
 
 }

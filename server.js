@@ -18,9 +18,15 @@ app.get('/', function (req, res) {
 io.on('connection', function (user) {
     console.log("Anonymous user has connected...");
 
+    user.on("draw_line", function (coords1, coords2) {
+        console.log(coords1);
+        console.log(coords2);
+        io.emit("line_drawn", coords1, coords2);
+    });
+
     user.on("disconnect", function () {
         console.log("Anonymous user has disconnected...");
-    })
+    });
 
 });
 
