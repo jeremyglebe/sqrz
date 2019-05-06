@@ -27,14 +27,6 @@ var squares = [[], [], [], [], [], [], [], [], [], []]
 // Tracking the lines that have been connected
 var grid = {};
 
-setInterval(function () {
-    if (io.sockets.sockets[plyid] != undefined) {
-        console.log(players[plyid]);
-    } else {
-        console.log("Socket not connected");
-    }
-}, 3000);
-
 // Handler for user connections
 io.on('connection', function (user) {
     console.log("User has connected...");
