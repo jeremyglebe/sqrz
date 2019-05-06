@@ -135,7 +135,9 @@ function try_score(user, close, far) {
 }
 
 function update_leaderboard() {
-    leaderboard = Object.values(players).sort(function (a, b) {
+    leaderboard = Object.keys(players).map(function (key) {
+        return players[key];
+    }).sort(function (a, b) {
         return a.score > b.score;
     });
     io.emit("update_leaderboard", leaderboard);
