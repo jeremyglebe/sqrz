@@ -36,6 +36,8 @@ var Sqrz = /** @class */ (function (_super) {
         this.nodes.inputEnableChildren = true;
         // Create a graphics object to draw lines
         this.line = this.game.add.graphics(0, 0);
+        // Player's score text
+        this.score_text = this.game.add.text(15, 15, "Score: 0", { fill: 'white' });
         // Draw all the dots
         for (var r = 0; r < 11; r++) {
             for (var c = 0; c < 11; c++) {
@@ -44,9 +46,17 @@ var Sqrz = /** @class */ (function (_super) {
         }
         this.create_nodes();
         // Call handler when receiving message from server
-        this.server.on('draw_line', function (coords1, coords2) {
+        this.server.on('draw_line', function (coords1, coords2, color) {
             // console.log("Server says draw a line");
-            _this.server_draw_line(_this.game, coords1, coords2);
+            _this.server_draw_line(_this.game, coords1, coords2, color);
+        });
+        // Handle request from server for username
+        this.server.on("request_username", function () {
+            _this.server.emit("username", "Jeremy");
+        });
+        // Handle updating score
+        this.server.on("update_score", function (myscore) {
+            _this.score_text.text = "Score: " + myscore.toString();
         });
     };
     Sqrz.prototype.update = function () {
@@ -86,11 +96,11 @@ var Sqrz = /** @class */ (function (_super) {
             y: this._row(sprite2.y)
         });
     };
-    Sqrz.prototype.server_draw_line = function (game, coords1, coords2) {
+    Sqrz.prototype.server_draw_line = function (game, coords1, coords2, color) {
         // console.log("Drawing line");
         var new_line = game.add.graphics(0, 0);
         // Line style for the line
-        new_line.lineStyle(4, 0x00FF00);
+        new_line.lineStyle(4, color);
         new_line.moveTo(this._x(coords1.x), this._y(coords1.y));
         new_line.lineTo(this._x(coords2.x), this._y(coords2.y));
     };

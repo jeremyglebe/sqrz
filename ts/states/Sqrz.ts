@@ -14,6 +14,8 @@ class Sqrz extends Phaser.State {
     line_origin: Phaser.Sprite;
     // Server connection object
     server: SocketIOClient.Socket;
+    // Player's score text
+    score_text: Phaser.Text;
 
     preload() {
     }
@@ -36,6 +38,8 @@ class Sqrz extends Phaser.State {
         this.nodes.inputEnableChildren = true;
         // Create a graphics object to draw lines
         this.line = this.game.add.graphics(0, 0);
+        // Player's score text
+        this.score_text = this.game.add.text(15, 15, "Score: 0", { fill: 'white' });
 
         // Draw all the dots
         for (let r = 0; r < 11; r++) {
@@ -46,9 +50,19 @@ class Sqrz extends Phaser.State {
         this.create_nodes();
 
         // Call handler when receiving message from server
-        this.server.on('draw_line', (coords1, coords2) => {
+        this.server.on('draw_line', (coords1, coords2, color) => {
             // console.log("Server says draw a line");
-            this.server_draw_line(this.game, coords1, coords2);
+            this.server_draw_line(this.game, coords1, coords2, color);
+        });
+
+        // Handle request from server for username
+        this.server.on("request_username", () => {
+            this.server.emit("username", "Jeremy");
+        });
+
+        // Handle updating score
+        this.server.on("update_score", (myscore) => {
+            this.score_text.text = "Score: " + myscore.toString();
         });
     }
 
@@ -96,11 +110,11 @@ class Sqrz extends Phaser.State {
         );
     }
 
-    server_draw_line(game, coords1, coords2) {
+    server_draw_line(game, coords1, coords2, color: number) {
         // console.log("Drawing line");
         let new_line: Phaser.Graphics = game.add.graphics(0, 0);
         // Line style for the line
-        new_line.lineStyle(4, 0x00FF00);
+        new_line.lineStyle(4, color);
         new_line.moveTo(this._x(coords1.x), this._y(coords1.y));
         new_line.lineTo(this._x(coords2.x), this._y(coords2.y));
     }
