@@ -58,7 +58,25 @@ function user_draw_line(coords1, coords2) {
         // for (key of Object.keys(grid)) {
         //     console.log(key, grid[key]);
         // }
+        try_score(close, far);
     }
+}
+
+function try_score(close, far) {
+    // If it is a vertical line, check a possible left or right square
+    if (_vertical(close, far)) {
+        // Check the left square
+        top_l = grid[(close.x - 1).toString() + '_' + close.y.toString() + '_' + close.x.toString() + '_' + close.y.toString()]
+        bottom_l = grid[(far.x - 1).toString() + '_' + far.y.toString() + '_' + far.x.toString() + '_' + far.y.toString()]
+        across_l = grid[(close.x - 1).toString() + '_' + close.y.toString() + '_' + (far.x - 1).toString() + '_' + far.y.toString()];
+        if (top_l && bottom_l && across_l){
+            console.log("Scored on left square!");
+        }
+    }
+    // else {
+    //     // else if horizontal, check a possible top or bottom square
+
+    // }
 }
 
 function valid_line(coords1, coords2) {
@@ -82,6 +100,10 @@ function _furthest_coord(coords1, coords2) {
 function _valid_distance(coords1, coords2) {
     return (Math.abs(coords1.x - coords2.x) == 1 || Math.abs(coords1.y - coords2.y) == 1)
         && (Math.abs(coords1.x - coords2.x) == 0 || Math.abs(coords1.y - coords2.y) == 0);
+}
+
+function _vertical(coords1, coords2) {
+    return Math.abs(coords1.y - coords2.y) == 1;
 }
 
 // Start the server

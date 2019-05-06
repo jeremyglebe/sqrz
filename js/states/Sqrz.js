@@ -25,8 +25,6 @@ var Sqrz = /** @class */ (function (_super) {
         // Log that we've entered the state
         console.log("State: Sqrz");
         // Connection to the server
-        // IGNORE THIS ERROR AND EVERYTHING WILL WORK
-        // ITS JUST A TYPESCRIPT TYPINGS ERROR IDK
         this.server = io();
         //Initialize the game pointer
         this.ptr = this.game.input.activePointer;

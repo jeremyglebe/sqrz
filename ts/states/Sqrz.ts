@@ -24,8 +24,6 @@ class Sqrz extends Phaser.State {
         console.log("State: Sqrz")
 
         // Connection to the server
-        // IGNORE THIS ERROR AND EVERYTHING WILL WORK
-        // ITS JUST A TYPESCRIPT TYPINGS ERROR IDK
         this.server = io();
 
         //Initialize the game pointer
