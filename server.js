@@ -14,39 +14,78 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
+// Tracking the squares that have been filled
+var squares = [][10];
+// Tracking the lines that have been connected
+var grid = {};
+
 // Handler for user connections
 io.on('connection', function (user) {
-    console.log("Anonymous user has connected...");
-
-    user.on("draw_line", function (coords1, coords2) {
-        if (valid_line(coords1, coords2)) {
-            console.log(coords1);
-            console.log(coords2);
-            io.emit("line_drawn", coords1, coords2);
-        }
-    });
-
-    user.on("disconnect", function () {
-        console.log("Anonymous user has disconnected...");
-    });
-
+    console.log("User has connected...");
+    // Draw each of the lines in the collection
+    for (key of Object.keys(grid)) {
+        console.log(key);
+        coords = key.split('_');
+        user.emit("draw_line", {
+            x: parseInt(coords[0]),
+            y: parseInt(coords[1])
+        },
+            {
+                x: parseInt(coords[2]),
+                y: parseInt(coords[3])
+            }
+        );
+    }
+    // User message handlers
+    user.on("disconnect", user_disconnect);
+    user.on("draw_line", user_draw_line);
 });
+
+function user_disconnect() {
+    console.log("User has disconnected...");
+}
+
+function user_draw_line(coords1, coords2) {
+    if (valid_line(coords1, coords2)) {
+        // console.log(coords1);
+        // console.log(coords2);
+        io.emit("draw_line", coords1, coords2);
+        close = _closest_coord(coords1, coords2);
+        far = _furthest_coord(coords1, coords2);
+        close_string = close.x.toString() + '_' + close.y.toString();
+        far_string = far.x.toString() + '_' + far.y.toString();
+        grid[close_string + '_' + far_string] = true;
+        // for (key of Object.keys(grid)) {
+        //     console.log(key, grid[key]);
+        // }
+    }
+}
+
+function valid_line(coords1, coords2) {
+    return _valid_distance(coords1, coords2);
+}
+
+function _closest_coord(coords1, coords2) {
+    if (coords1.x < coords2.x || coords1.y < coords2.y)
+        return coords1;
+    else
+        return coords2;
+}
+
+function _furthest_coord(coords1, coords2) {
+    if (coords1.x > coords2.x || coords1.y > coords2.y)
+        return coords1;
+    else
+        return coords2;
+}
+
+function _valid_distance(coords1, coords2) {
+    return (Math.abs(coords1.x - coords2.x) == 1 || Math.abs(coords1.y - coords2.y) == 1)
+        && (Math.abs(coords1.x - coords2.x) == 0 || Math.abs(coords1.y - coords2.y) == 0);
+}
 
 // Start the server
 server.listen(8081, function () {
     //This will just output what port we're listening on.
     console.log(`Listening on ${server.address().port}`);
 });
-
-function valid_line(coords1, coords2) {
-    // Checking distance
-    good_dist = false;
-    // If the distance on one axis (and ONLY one axis) is equal to 30
-    if (
-        (Math.abs(coords1.x - coords2.x) == 30 || Math.abs(coords1.y - coords2.y) == 30)
-        && !(Math.abs(coords1.x - coords2.x) == 30 && Math.abs(coords1.y - coords2.y) == 30)) {
-        good_dist = true;
-    }
-    // Return results
-    return good_dist;
-}
