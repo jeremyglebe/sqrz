@@ -47,6 +47,8 @@ io.on('connection', function (user) {
         if (!plyid) {
             next_turn();
         }
+        // Make sure that they get the first user turn
+        io.emit('next_turn', plyname);
     });
     // Draw each of the lines in the collection
     for (key of Object.keys(grid)) {
@@ -76,6 +78,8 @@ function next_turn() {
     plyid = queue[0];
     plyname = players[plyid].username;
     console.log(plyname, plyid);
+    // Inform clients who is playing next
+    io.emit("next_turn", plyname);
     // Check if the game should restart
     restart = true;
     for (r = 0; r < 10; r++) {

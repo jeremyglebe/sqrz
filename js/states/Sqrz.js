@@ -41,6 +41,9 @@ var Sqrz = /** @class */ (function (_super) {
         this.score_text = this.game.add.text(15, 15, "Score: 0", { fill: 'white' });
         // leaderboard
         this.board_display = [];
+        // Turn text
+        this.turn_text = this.game.add.text(400, 400, "'s Turn!", { fill: 'white' });
+        this.turn_text.anchor.set(0.5);
         // Draw all the dots
         for (var r = 0; r < 11; r++) {
             for (var c = 0; c < 11; c++) {
@@ -64,6 +67,10 @@ var Sqrz = /** @class */ (function (_super) {
         // Handle updating the leaderboard
         this.server.on("update_leaderboard", function (leaderboard) {
             _this.server_update_leaderboard(_this.game, leaderboard);
+        });
+        // Handle updating the turn
+        this.server.on("next_turn", function (name) {
+            _this.server_next_turn(name);
         });
     };
     Sqrz.prototype.update = function () {
@@ -110,6 +117,9 @@ var Sqrz = /** @class */ (function (_super) {
         new_line.lineStyle(4, color);
         new_line.moveTo(this._x(coords1.x), this._y(coords1.y));
         new_line.lineTo(this._x(coords2.x), this._y(coords2.y));
+    };
+    Sqrz.prototype.server_next_turn = function (name) {
+        this.turn_text.text = name + "'s Turn!";
     };
     Sqrz.prototype.server_update_leaderboard = function (game, leaderboard) {
         console.log("Update leaderboard called");

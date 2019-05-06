@@ -20,6 +20,8 @@ class Sqrz extends Phaser.State {
     username: string;
     // Text displays for the scores of the top players
     board_display: Phaser.Text[];
+    // Shows who's turn it is
+    turn_text: Phaser.Text;
 
     init(name: string) {
         this.username = name;
@@ -47,6 +49,9 @@ class Sqrz extends Phaser.State {
         this.score_text = this.game.add.text(15, 15, "Score: 0", { fill: 'white' });
         // leaderboard
         this.board_display = [];
+        // Turn text
+        this.turn_text = this.game.add.text(400, 400, "'s Turn!", { fill: 'white' });
+        this.turn_text.anchor.set(0.5);
 
         // Draw all the dots
         for (let r = 0; r < 11; r++) {
@@ -75,6 +80,11 @@ class Sqrz extends Phaser.State {
         // Handle updating the leaderboard
         this.server.on("update_leaderboard", (leaderboard) => {
             this.server_update_leaderboard(this.game, leaderboard);
+        });
+
+        // Handle updating the turn
+        this.server.on("next_turn", (name) => {
+            this.server_next_turn(name);
         });
     }
 
@@ -129,6 +139,10 @@ class Sqrz extends Phaser.State {
         new_line.lineStyle(4, color);
         new_line.moveTo(this._x(coords1.x), this._y(coords1.y));
         new_line.lineTo(this._x(coords2.x), this._y(coords2.y));
+    }
+
+    server_next_turn(name) {
+        this.turn_text.text = name + "'s Turn!";
     }
 
     server_update_leaderboard(game: Phaser.Game, leaderboard) {
