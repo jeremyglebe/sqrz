@@ -5,7 +5,10 @@ var app = Express();
 // Create the http server
 var server = require('http').Server(app);
 // Use socket.io for input and output
-var io = require('socket.io').listen(server);
+var io = require('socket.io').listen(server, {
+    pingInterval: 10000,
+    pingTimeout: 5000
+});
 
 // Set the client root directory
 app.use(Express.static(__dirname));
