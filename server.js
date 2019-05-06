@@ -72,9 +72,9 @@ io.on('connection', function (user) {
 });
 
 function next_turn() {
+    queue.push(queue.shift());
     plyid = queue[0];
     plyname = players[plyid].username;
-    queue.push(queue.shift());
     console.log(plyname, plyid);
     // Check if the game should restart
     restart = true;
@@ -99,6 +99,9 @@ function user_disconnect(user) {
     if (plyid == user.id) {
         plyid = null;
         plyname = null;
+        if (queue.length > 0) {
+            next_turn();
+        }
     }
     update_leaderboard();
 }
@@ -119,6 +122,7 @@ function user_draw_line(user, coords1, coords2) {
 }
 
 function try_score(user, close, far) {
+    result = false;
     // If it is a vertical line, check a possible left or right square
     if (_vertical(close, far)) {
         // Check the left square
@@ -132,7 +136,7 @@ function try_score(user, close, far) {
             players[user.id].score++;
             user.emit("update_score", players[user.id].score);
             update_leaderboard();
-            return true;
+            result = true;
         }
         // Check the right square
         top_r = grid[close.x.toString() + '_' + close.y.toString() + '_' + (close.x + 1).toString() + '_' + close.y.toString()]
@@ -145,7 +149,7 @@ function try_score(user, close, far) {
             players[user.id].score++;
             user.emit("update_score", players[user.id].score);
             update_leaderboard();
-            return true;
+            result = true;
         }
     } else {
         // else if horizontal, check a possible top or bottom square
@@ -160,7 +164,7 @@ function try_score(user, close, far) {
             players[user.id].score++;
             user.emit("update_score", players[user.id].score);
             update_leaderboard();
-            return true;
+            result = true;
         }
         // Check the bottom square
         bottom_l = grid[close.x.toString() + '_' + close.y.toString() + '_' + close.x.toString() + '_' + (close.y + 1).toString()];
@@ -173,10 +177,10 @@ function try_score(user, close, far) {
             players[user.id].score++;
             user.emit("update_score", players[user.id].score);
             update_leaderboard();
-            return true;
+            result = true;
         }
     }
-    return false;
+    return result;
 }
 
 function update_leaderboard() {
