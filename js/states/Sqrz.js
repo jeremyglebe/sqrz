@@ -121,9 +121,10 @@ var Sqrz = /** @class */ (function (_super) {
         // Add all the texts for the leaders
         for (var i = 0; i < 5; i++) {
             if (leaderboard[i]) {
-                this.board_display.push(game.add.text(700, 20 * i + 20, leaderboard[i].username + ': ' + leaderboard[i].score, {
+                this.board_display.push(game.add.text(600, 20 * i + 50, leaderboard[i].username + ': ' + leaderboard[i].score, {
                     fill: '#' + leaderboard[i].color.toString(16),
-                    font: '10pt Arial'
+                    font: 'Bold Arial',
+                    fontSize: 18
                 }));
             }
         }
