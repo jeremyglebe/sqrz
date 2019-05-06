@@ -16,8 +16,13 @@ class Sqrz extends Phaser.State {
     server: SocketIOClient.Socket;
     // Player's score text
     score_text: Phaser.Text;
+    // Player's username
+    username: string;
+    // Text displays for the scores of the top players
+    board_display: Phaser.Text[];
 
-    preload() {
+    init(name: string) {
+        this.username = name;
     }
 
     // Function to create the initial game layout and world
@@ -40,6 +45,8 @@ class Sqrz extends Phaser.State {
         this.line = this.game.add.graphics(0, 0);
         // Player's score text
         this.score_text = this.game.add.text(15, 15, "Score: 0", { fill: 'white' });
+        // leaderboard
+        this.board_display = [];
 
         // Draw all the dots
         for (let r = 0; r < 11; r++) {
@@ -57,12 +64,17 @@ class Sqrz extends Phaser.State {
 
         // Handle request from server for username
         this.server.on("request_username", () => {
-            this.server.emit("username", "Jeremy");
+            this.server.emit("username", this.username);
         });
 
         // Handle updating score
         this.server.on("update_score", (myscore) => {
             this.score_text.text = "Score: " + myscore.toString();
+        });
+
+        // Handle updating the leaderboard
+        this.server.on("update_leaderboard", (leaderboard) => {
+            this.server_update_leaderboard(this.game, leaderboard);
         });
     }
 
@@ -117,6 +129,26 @@ class Sqrz extends Phaser.State {
         new_line.lineStyle(4, color);
         new_line.moveTo(this._x(coords1.x), this._y(coords1.y));
         new_line.lineTo(this._x(coords2.x), this._y(coords2.y));
+    }
+
+    server_update_leaderboard(game: Phaser.Game, leaderboard) {
+        console.log("Update leaderboard called");
+        // Delete everything else
+        this.board_display.forEach((text) => {
+            text.destroy();
+        });
+        this.board_display = [];
+        // Add all the texts for the leaders
+        for (let i = 0; i < 5; i++) {
+            if (leaderboard[i]) {
+                this.board_display.push(game.add.text(700, 20 * i + 20,
+                    leaderboard[i].username + ': ' + leaderboard[i].score,
+                    {
+                        fill: '#' + leaderboard[i].color.toString(16),
+                        font: '10pt Arial'
+                    }));
+            }
+        }
     }
 
     update_cursor_line() {

@@ -29,7 +29,7 @@ var Boot = /** @class */ (function (_super) {
         this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         this.game.scale.setMinMax(200, 150, 1600, 1200);
         // Start the next state
-        this.game.state.start('Sqrz');
+        this.game.state.start('Menu');
     };
     return Boot;
 }(Phaser.State));

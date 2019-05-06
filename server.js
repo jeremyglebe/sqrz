@@ -34,6 +34,9 @@ io.on('connection', function (user) {
             color: Math.floor(Math.random() * 16777215),
             score: 0
         }
+        // Update the leaderboard for all players
+        update_leaderboard();
+        console.log(players[user.id].username + " joined successfully!");
     });
     // Draw each of the lines in the collection
     for (key of Object.keys(grid)) {
@@ -52,12 +55,14 @@ io.on('connection', function (user) {
         );
     }
     // User message handlers
-    user.on("disconnect", user_disconnect);
+    user.on("disconnect", () => { user_disconnect(user) });
     user.on("draw_line", (c1, c2) => { user_draw_line(user, c1, c2) });
 });
 
-function user_disconnect() {
+function user_disconnect(user) {
     console.log("User has disconnected...");
+    delete players[user.id];
+    update_leaderboard();
 }
 
 function user_draw_line(user, coords1, coords2) {
@@ -86,6 +91,7 @@ function try_score(user, close, far) {
             // Increase the player's score
             players[user.id].score++;
             user.emit("update_score", players[user.id].score);
+            update_leaderboard();
         }
         // Check the right square
         top_r = grid[close.x.toString() + '_' + close.y.toString() + '_' + (close.x + 1).toString() + '_' + close.y.toString()]
@@ -97,6 +103,7 @@ function try_score(user, close, far) {
             // Increase the player's score
             players[user.id].score++;
             user.emit("update_score", players[user.id].score);
+            update_leaderboard();
         }
     } else {
         // else if horizontal, check a possible top or bottom square
@@ -110,6 +117,7 @@ function try_score(user, close, far) {
             // Increase the player's score
             players[user.id].score++;
             user.emit("update_score", players[user.id].score);
+            update_leaderboard();
         }
         // Check the bottom square
         bottom_l = grid[close.x.toString() + '_' + close.y.toString() + '_' + close.x.toString() + '_' + (close.y + 1).toString()];
@@ -121,8 +129,16 @@ function try_score(user, close, far) {
             // Increase the player's score
             players[user.id].score++;
             user.emit("update_score", players[user.id].score);
+            update_leaderboard();
         }
     }
+}
+
+function update_leaderboard() {
+    leaderboard = Object.values(players).sort(function (a, b) {
+        return a.score > b.score;
+    });
+    io.emit("update_leaderboard", leaderboard);
 }
 
 function valid_line(coords1, coords2) {

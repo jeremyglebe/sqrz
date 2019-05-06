@@ -17,7 +17,8 @@ var Sqrz = /** @class */ (function (_super) {
     function Sqrz() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    Sqrz.prototype.preload = function () {
+    Sqrz.prototype.init = function (name) {
+        this.username = name;
     };
     // Function to create the initial game layout and world
     Sqrz.prototype.create = function () {
@@ -38,6 +39,8 @@ var Sqrz = /** @class */ (function (_super) {
         this.line = this.game.add.graphics(0, 0);
         // Player's score text
         this.score_text = this.game.add.text(15, 15, "Score: 0", { fill: 'white' });
+        // leaderboard
+        this.board_display = [];
         // Draw all the dots
         for (var r = 0; r < 11; r++) {
             for (var c = 0; c < 11; c++) {
@@ -52,11 +55,15 @@ var Sqrz = /** @class */ (function (_super) {
         });
         // Handle request from server for username
         this.server.on("request_username", function () {
-            _this.server.emit("username", "Jeremy");
+            _this.server.emit("username", _this.username);
         });
         // Handle updating score
         this.server.on("update_score", function (myscore) {
             _this.score_text.text = "Score: " + myscore.toString();
+        });
+        // Handle updating the leaderboard
+        this.server.on("update_leaderboard", function (leaderboard) {
+            _this.server_update_leaderboard(_this.game, leaderboard);
         });
     };
     Sqrz.prototype.update = function () {
@@ -103,6 +110,23 @@ var Sqrz = /** @class */ (function (_super) {
         new_line.lineStyle(4, color);
         new_line.moveTo(this._x(coords1.x), this._y(coords1.y));
         new_line.lineTo(this._x(coords2.x), this._y(coords2.y));
+    };
+    Sqrz.prototype.server_update_leaderboard = function (game, leaderboard) {
+        console.log("Update leaderboard called");
+        // Delete everything else
+        this.board_display.forEach(function (text) {
+            text.destroy();
+        });
+        this.board_display = [];
+        // Add all the texts for the leaders
+        for (var i = 0; i < 5; i++) {
+            if (leaderboard[i]) {
+                this.board_display.push(game.add.text(700, 20 * i + 20, leaderboard[i].username + ': ' + leaderboard[i].score, {
+                    fill: '#' + leaderboard[i].color.toString(16),
+                    font: '10pt Arial'
+                }));
+            }
+        }
     };
     Sqrz.prototype.update_cursor_line = function () {
         // Clear the line
