@@ -19,13 +19,7 @@ class Boot extends Phaser.State {
 
         // Set the scale mode to stay proportional
         this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-        // Set the maximum scaling
-        if (device_size > 320) {
-            this.game.scale.setMinMax(320, 320, device_size, device_size);
-        } else {
-            this.game.scale.setMinMax(320, 320, 320, 320);
-        }
-
+        this.game.scale.setMinMax(200, 150, 1600, 1200);
         // Start the next state
         this.game.state.start('Sqrz');
 

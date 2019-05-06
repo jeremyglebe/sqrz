@@ -1,5 +1,5 @@
 // Create instance of a phaser game, with scaled size
-var game = new Phaser.Game(320, 320, Phaser.AUTO, 'game');
+var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game');
 
 // Add all the game states
 game.state.add('Boot', Boot);

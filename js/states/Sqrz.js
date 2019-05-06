@@ -21,10 +21,13 @@ var Sqrz = /** @class */ (function (_super) {
     };
     // Function to create the initial game layout and world
     Sqrz.prototype.create = function () {
+        var _this = this;
         // Log that we've entered the state
         console.log("State: Sqrz");
         // Connection to the server
-        this.server = SocketIO();
+        // IGNORE THIS ERROR AND EVERYTHING WILL WORK
+        // ITS JUST A TYPESCRIPT TYPINGS ERROR IDK
+        this.server = io();
         //Initialize the game pointer
         this.ptr = this.game.input.activePointer;
         // Initialize the line origin (no origin until a dot is clicked)
@@ -38,25 +41,27 @@ var Sqrz = /** @class */ (function (_super) {
         // Draw all the dots
         for (var r = 0; r < 11; r++) {
             for (var c = 0; c < 11; c++) {
-                this.game.add.graphics(c * 20 + 10, r * 20 + 10, this.dots);
+                this.game.add.graphics(c * 30 + 240, r * 30 + 60, this.dots);
             }
         }
-        this.draw_grid();
+        this.init_grid();
         // Call handler when receiving message from server
-        this.server.on('line_drawn', this.serverLineDrawn);
+        this.server.on('line_drawn', function (coords1, coords2) {
+            _this.serverLineDrawn(_this.game, coords1, coords2);
+        });
     };
     Sqrz.prototype.update = function () {
         this.draw_line();
     };
     // Draw the game grid
-    Sqrz.prototype.draw_grid = function () {
+    Sqrz.prototype.init_grid = function () {
         var _this = this;
         // Draw the circles
         this.dots.forEach(function (dot) {
             // Set the fill color
             dot.beginFill(0xFFFFFF);
             // Draw the circle
-            dot.drawCircle(0, 0, 10);
+            dot.drawCircle(0, 0, 20);
             // End the filling
             dot.endFill();
         }, this, true);
@@ -67,20 +72,32 @@ var Sqrz = /** @class */ (function (_super) {
         // Handle releasing a click on a dot (tries to make a new permanent line)
         this.dots.onChildInputUp.add(function (sprite, cursor) {
             _this.line_origin = null;
-            // Draw a new permanent line between dots
+            // Draw a new permanent line between dots (through the server)
             if (cursor.targetObject && _this.dots.contains(cursor.targetObject.sprite)) {
                 console.log("Connected two dots");
                 var sprite1 = sprite;
                 var sprite2 = cursor.targetObject.sprite;
-                var new_line = _this.game.add.graphics(0, 0);
-                // Line style for the line
-                new_line.lineStyle(2, 0x00FF00);
-                // Draw from the mouse
-                new_line.moveTo(sprite1.x, sprite1.y);
-                // Draw to the center (the dot)
-                new_line.lineTo(sprite2.x, sprite2.y);
+                // Send a message to the server
+                _this.server.emit('draw_line', {
+                    x: sprite1.x,
+                    y: sprite1.y
+                }, {
+                    x: sprite2.x,
+                    y: sprite2.y
+                });
             }
         }, this);
+    };
+    Sqrz.prototype.draw_grid = function () {
+        // Draw the circles
+        this.dots.forEach(function (dot) {
+            // Set the fill color
+            dot.beginFill(0xFFFFFF);
+            // Draw the circle
+            dot.drawCircle(0, 0, 20);
+            // End the filling
+            dot.endFill();
+        }, this, true);
     };
     Sqrz.prototype.draw_line = function () {
         // Clear the line
@@ -93,22 +110,16 @@ var Sqrz = /** @class */ (function (_super) {
             this.line.moveTo(this.ptr.x, this.ptr.y);
             // Draw to the center (the dot)
             this.line.lineTo(this.line_origin.x, this.line_origin.y);
-            // Send a message to the server
-            this.server.emit('draw_line', {
-                x: this.ptr.x,
-                y: this.ptr.y
-            }, {
-                x: this.line_origin.x,
-                y: this.line_origin.y
-            });
         }
     };
-    Sqrz.prototype.serverLineDrawn = function (coords1, coords2) {
-        var new_line = this.game.add.graphics(0, 0);
+    Sqrz.prototype.serverLineDrawn = function (game, coords1, coords2) {
+        var new_line = game.add.graphics(0, 0);
         // Line style for the line
         new_line.lineStyle(2, 0x00FF00);
         new_line.moveTo(coords1.x, coords1.y);
         new_line.lineTo(coords2.x, coords2.y);
+        // Draw the grid back over the lines
+        this.draw_grid();
     };
     return Sqrz;
 }(Phaser.State));

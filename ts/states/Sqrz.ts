@@ -13,7 +13,7 @@ class Sqrz extends Phaser.State {
     // Sprite that the user is drawing a line from
     line_origin: Phaser.Sprite;
     // Server connection object
-    server: SocketIO.Server;
+    server: SocketIOClient.Socket;
 
     preload() {
     }
@@ -24,7 +24,9 @@ class Sqrz extends Phaser.State {
         console.log("State: Sqrz")
 
         // Connection to the server
-        this.server = SocketIO();
+        // IGNORE THIS ERROR AND EVERYTHING WILL WORK
+        // ITS JUST A TYPESCRIPT TYPINGS ERROR IDK
+        this.server = io();
 
         //Initialize the game pointer
         this.ptr = this.game.input.activePointer;
@@ -40,13 +42,15 @@ class Sqrz extends Phaser.State {
         // Draw all the dots
         for (let r = 0; r < 11; r++) {
             for (let c = 0; c < 11; c++) {
-                this.game.add.graphics(c * 20 + 10, r * 20 + 10, this.dots);
+                this.game.add.graphics(c * 30 + 240, r * 30 + 60, this.dots);
             }
         }
-        this.draw_grid();
+        this.init_grid();
 
         // Call handler when receiving message from server
-        this.server.on('line_drawn', this.serverLineDrawn);
+        this.server.on('line_drawn', (coords1, coords2) => {
+            this.serverLineDrawn(this.game, coords1, coords2);
+        });
     }
 
     update() {
@@ -54,13 +58,13 @@ class Sqrz extends Phaser.State {
     }
 
     // Draw the game grid
-    draw_grid() {
+    init_grid() {
         // Draw the circles
         this.dots.forEach((dot: Phaser.Graphics) => {
             // Set the fill color
             dot.beginFill(0xFFFFFF);
             // Draw the circle
-            dot.drawCircle(0, 0, 10);
+            dot.drawCircle(0, 0, 20);
             // End the filling
             dot.endFill();
         }, this, true);
@@ -73,20 +77,36 @@ class Sqrz extends Phaser.State {
         // Handle releasing a click on a dot (tries to make a new permanent line)
         this.dots.onChildInputUp.add((sprite: Phaser.Sprite, cursor: Phaser.Pointer) => {
             this.line_origin = null;
-            // Draw a new permanent line between dots
+            // Draw a new permanent line between dots (through the server)
             if (cursor.targetObject && this.dots.contains(cursor.targetObject.sprite)) {
                 console.log("Connected two dots");
                 let sprite1 = sprite;
                 let sprite2 = cursor.targetObject.sprite;
-                let new_line = this.game.add.graphics(0, 0);
-                // Line style for the line
-                new_line.lineStyle(2, 0x00FF00);
-                // Draw from the mouse
-                new_line.moveTo(sprite1.x, sprite1.y);
-                // Draw to the center (the dot)
-                new_line.lineTo(sprite2.x, sprite2.y);
+                // Send a message to the server
+                this.server.emit('draw_line',
+                    {
+                        x: sprite1.x,
+                        y: sprite1.y
+                    },
+                    {
+                        x: sprite2.x,
+                        y: sprite2.y
+                    }
+                );
             }
         }, this)
+    }
+
+    draw_grid() {
+        // Draw the circles
+        this.dots.forEach((dot: Phaser.Graphics) => {
+            // Set the fill color
+            dot.beginFill(0xFFFFFF);
+            // Draw the circle
+            dot.drawCircle(0, 0, 20);
+            // End the filling
+            dot.endFill();
+        }, this, true);
     }
 
     draw_line() {
@@ -100,26 +120,17 @@ class Sqrz extends Phaser.State {
             this.line.moveTo(this.ptr.x, this.ptr.y);
             // Draw to the center (the dot)
             this.line.lineTo(this.line_origin.x, this.line_origin.y);
-            // Send a message to the server
-            this.server.emit('draw_line',
-                {
-                    x: this.ptr.x,
-                    y: this.ptr.y
-                },
-                {
-                    x: this.line_origin.x,
-                    y: this.line_origin.y
-                }
-            );
         }
     }
 
-    serverLineDrawn(coords1, coords2) {
-        let new_line = this.game.add.graphics(0, 0);
+    serverLineDrawn(game, coords1, coords2) {
+        let new_line: Phaser.Graphics = game.add.graphics(0, 0);
         // Line style for the line
         new_line.lineStyle(2, 0x00FF00);
         new_line.moveTo(coords1.x, coords1.y);
         new_line.lineTo(coords2.x, coords2.y);
+        // Draw the grid back over the lines
+        this.draw_grid();
     }
 
 }
