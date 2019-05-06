@@ -78,8 +78,8 @@ function next_turn() {
     console.log(plyname, plyid);
     // Check if the game should restart
     restart = true;
-    for (let r = 0; r < 10; r++) {
-        for (let c = 0; c < 10; c++) {
+    for (r = 0; r < 10; r++) {
+        for (c = 0; c < 10; c++) {
             if (!squares[r][c]) {
                 restart = false;
             }
