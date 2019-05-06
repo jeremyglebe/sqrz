@@ -187,7 +187,7 @@ function update_leaderboard() {
     leaderboard = Object.keys(players).map(function (key) {
         return players[key];
     }).sort(function (a, b) {
-        return a.score > b.score;
+        return a.score < b.score;
     });
     io.emit("update_leaderboard", leaderboard);
 }
